@@ -19,7 +19,7 @@ Changelog is available from version 3.1.1 here: [Changelog](https://github.com/z
 ## Installation
 `npm install --save react-native-push-notification` or `yarn add react-native-push-notification`
 
-`react-native link`
+`react-native link react-native-push-notification`
 
 **NOTE: For Android, you will still have to manually update the AndroidManifest.xml (as below) in order to use Scheduled Notifications.**
 
@@ -59,19 +59,27 @@ ext {
 In your `AndroidManifest.xml`
 ```xml
     .....
-    <!-- <Only if you're using GCM> -->
+    <!-- < Only if you're using GCM or localNotificationSchedule() > -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <permission
         android:name="${applicationId}.permission.C2D_MESSAGE"
         android:protectionLevel="signature" />
     <uses-permission android:name="${applicationId}.permission.C2D_MESSAGE" />
-    <!-- </Only if you're using GCM> -->
+    <!-- < Only if you're using GCM or localNotificationSchedule() > -->
 
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
     <application ....>
-        <!-- <Only if you're using GCM> -->
+        <meta-data  android:name="com.dieam.reactnativepushnotification.notification_channel_name"
+                android:value="YOUR NOTIFICATION CHANNEL NAME"/>
+        <meta-data  android:name="com.dieam.reactnativepushnotification.notification_channel_description"
+                    android:value="YOUR NOTIFICATION CHANNEL DESCRIPTION"/>
+        <!-- Change the resource name to your App's accent color - or any other color you want -->
+        <meta-data  android:name="com.dieam.reactnativepushnotification.notification_color"
+                    android:resource="@android:color/white"/>
+
+        <!-- < Only if you're using GCM or localNotificationSchedule() > -->
         <receiver
             android:name="com.google.android.gms.gcm.GcmReceiver"
             android:exported="true"
@@ -81,7 +89,7 @@ In your `AndroidManifest.xml`
                 <category android:name="${applicationId}" />
             </intent-filter>
         </receiver>
-        <!-- </Only if you're using GCM> -->
+        <!-- < Only if you're using GCM or localNotificationSchedule() > -->
 
         <receiver android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationPublisher" />
         <receiver android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationBootEventReceiver">
@@ -94,9 +102,9 @@ In your `AndroidManifest.xml`
             android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationListenerService"
             android:exported="false" >
             <intent-filter>
-                <!-- <Only if you're using GCM> -->
+                <!-- < Only if you're using GCM or localNotificationSchedule() > -->
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
-                <!-- </Only if you're using GCM> -->
+                <!-- < Only if you're using GCM or localNotificationSchedule() > -->
 
                 <!-- <Else> -->
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
@@ -110,9 +118,15 @@ In your `AndroidManifest.xml`
 In `android/settings.gradle`
 ```gradle
 ...
-
 include ':react-native-push-notification'
 project(':react-native-push-notification').projectDir = file('../node_modules/react-native-push-notification/android')
+```
+
+In `android/app/src/res/values/colors.xml` (Create the file if it doesn't exist).
+```xml
+<resources>
+    <color name="white">#FFF</color>
+</resources>
 ```
 
 Manually register module in `MainApplication.java` (if you did not use `react-native link`):
@@ -272,7 +286,7 @@ In the location notification json specify the full file name:
 The `id` parameter for `PushNotification.localNotification` is required for this operation. The id supplied will then be used for the cancel operation.
 
 ```javascript
-// Android 
+// Android
 PushNotification.localNotification({
     ...
     id: '123'
@@ -284,7 +298,7 @@ PushNotification.cancelLocalNotifications({id: '123'});
 #### IOS
 The `userInfo` parameter for `PushNotification.localNotification` is required for this operation and must contain an `id` parameter. The id supplied will then be used for the cancel operation.
 ```javascript
-// IOS 
+// IOS
 PushNotification.localNotification({
     ...
     userInfo: { id: '123' }
